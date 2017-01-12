@@ -7,7 +7,7 @@ RM=rm
 CFLAGS=-Wall -std=c90 -Wno-implicit -s NO_EXIT_RUNTIME=1
 #CFLAGS=-O2 -g
 CC=emcc
-LEX=lex
+LEX=flex
 LEXFLAGS=-t
 
 all: 2600basic preprocess postprocess optimize bbfilter
@@ -18,9 +18,9 @@ all: 2600basic preprocess postprocess optimize bbfilter
 postprocess: postprocess.c
 	${CC} ${CFLAGS} -o postprocess postprocess.c
 
-preprocess: preprocess.lex
+preprocess.em.js: preprocess.lex
 	${LEX} ${LEXFLAGS}<preprocess.lex>lex.yy.c
-	${CC} ${CFLAGS} -o preprocess lex.yy.c
+	${CC} ${CFLAGS} -o preprocess.em.js lex.yy.c
 	${RM} -f lex.yy.c
 
 optimize: optimize.lex
