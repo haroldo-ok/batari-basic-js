@@ -58,9 +58,14 @@ mainloop
 				FS.init(stdin, stdout, stderr);
 				
 				FS.writeFile("default.inc", "\nbB.asm\n");
-			  }
+			  },
+			  
+			  noInitialRun: true
 		};
 	</script>
     <script type="text/javascript" src="2600basic.em.js"></script>
+	<script>
+		Module.callMain();
+	</script>
   </body>
 </html>

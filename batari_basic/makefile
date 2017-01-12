@@ -4,7 +4,7 @@ CHMOD=chmod
 CP=cp
 RM=rm
 #CFLAGS=-O0 -ansi -Wall
-CFLAGS=-Wall -std=c90 -Wno-implicit 
+CFLAGS=-Wall -std=c90 -Wno-implicit -s NO_EXIT_RUNTIME=1
 #CFLAGS=-O2 -g
 CC=emcc
 LEX=lex
