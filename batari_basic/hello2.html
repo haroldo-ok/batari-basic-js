@@ -36,18 +36,24 @@ mainloop
 	<script type="text/javascript">
 		Module = { 
 			  preRun: function() {
+				console.log('preRun');
+				
 				var position = 0;
 				var source = document.getElementById('input').value;
 				var out = document.getElementById('output');
 				var err = document.getElementById('error');
+				
+				window.blah = '';
 			  
 				function stdin() {
 					var ch = position >= source.length ? null : source.charCodeAt(position);
+					console.log('stdin', ch);
 					position++;
 					return ch;
 				}
 
 				function stdout(asciiCode) {
+					window.blah += String.fromCharCode(asciiCode);
 					out.value = out.value + String.fromCharCode(asciiCode);
 				}
 
@@ -62,10 +68,15 @@ mainloop
 			  
 			  noInitialRun: true
 		};
+		
+		function executeApplication() {
+			preRun();
+			Module.callMain();
+		}
 	</script>
     <script type="text/javascript" src="2600basic.em.js"></script>
 	<script>
-		Module.callMain();
+		setTimeout(executeApplication, 1000);
 	</script>
   </body>
 </html>
