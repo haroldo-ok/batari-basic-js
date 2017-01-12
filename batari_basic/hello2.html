@@ -5,33 +5,46 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   </head>
   <body>
-    <script type="text/javascript" src="2600basic.em.js"></script>
+
+	<pre id="output"></pre>
+	<pre id="error" style="color: red"></pre>
+  
 	<script type="text/javascript">
-		function doIt() {
-			xxx = { 
+		Module = { 
 			  preRun: function() {
+				var SOURCE = [
+					" dim carpos=a",
+					" dim turndelay=b",
+					"mainloop",
+					"  drawscreen",
+					"  goto mainloop",
+				].join('\n');
+				
+				var position = 0;
+				
+				var out = document.getElementById('output');
+				var err = document.getElementById('error');
+			  
 				function stdin() {
-				  return "a"
+					var ch = position >= SOURCE.length ? null : SOURCE[position];
+					position++;
+					return ch;
 				}
 
 				function stdout(asciiCode) {
-				  // Do something with the asciiCode
+					out.innerHTML = out.innerHTML + String.fromCharCode(asciiCode);
 				}
 
 				function stderr(asciiCode) {
-				  // Do something with the asciiCode
+					err.innerHTML = err.innerHTML + String.fromCharCode(asciiCode);
 				}
 
-				console.warn(this)
-				console.warn(arguments)
-				console.warn(BB_2600basic)
-				console.warn(Module)
-				BB_2600basic['FS'].init(stdin, stdout, stderr);
+				FS.init(stdin, stdout, stderr);
+				
+				FS.writeFile("default.inc", "bB.asm");
 			  }
-			}
-		
-			BB_2600basic(xxx);
-		}
+		};
 	</script>
+    <script type="text/javascript" src="2600basic.em.js"></script>
   </body>
 </html>

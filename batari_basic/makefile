@@ -4,7 +4,7 @@ CHMOD=chmod
 CP=cp
 RM=rm
 #CFLAGS=-O0 -ansi -Wall
-CFLAGS=-Wall -std=c90 -Wno-implicit -s MODULARIZE=1 -s 'EXTRA_EXPORTED_RUNTIME_METHODS=["FS"]'
+CFLAGS=-Wall -std=c90 -Wno-implicit 
 #CFLAGS=-O2 -g
 CC=emcc
 LEX=lex
@@ -13,7 +13,7 @@ LEXFLAGS=-t
 all: 2600basic preprocess postprocess optimize bbfilter
 
 2600basic.em.js: 2600bas.c statements.c keywords.c statements.h keywords.h
-	${CC} ${CFLAGS} -s EXPORT_NAME=\"'BB_2600basic'\" -o 2600basic.em.js 2600bas.c statements.c keywords.c
+	${CC} ${CFLAGS} -o 2600basic.em.js 2600bas.c statements.c keywords.c
 
 postprocess: postprocess.c
 	${CC} ${CFLAGS} -o postprocess postprocess.c
