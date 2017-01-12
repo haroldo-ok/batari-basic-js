@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  </head>
+  <body>
+    <script type="text/javascript" src="2600basic.em.js"></script>
+	<script type="text/javascript">
+		function doIt() {
+			xxx = { 
+			  preRun: function() {
+				function stdin() {
+				  return "a"
+				}
+
+				function stdout(asciiCode) {
+				  // Do something with the asciiCode
+				}
+
+				function stderr(asciiCode) {
+				  // Do something with the asciiCode
+				}
+
+				console.warn(this)
+				console.warn(arguments)
+				console.warn(BB_2600basic)
+				console.warn(Module)
+				BB_2600basic['FS'].init(stdin, stdout, stderr);
+			  }
+			}
+		
+			BB_2600basic(xxx);
+		}
+	</script>
+  </body>
+</html>
