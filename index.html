@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  </head>
+  <body>
+  
+	<style>
+		fieldset {
+			display: inline-block;
+		}
+	</style>
+  
+	<fieldset>
+		<legend>Input</legend>
+		<textArea id="input" rows="20" cols="60">
+ rem Hello World
+ dim turndelay=b
+ dim collcount=b
+
+ if turndelay{1} then player1: 
+    %00100100
+    %00010100
+    %00011000
+    %00010000
+    %00111000
+    %00010000
+    %00011000
+    %00011000
+end
+
+ COLUPF = 14
+
+mainloop
+ drawscreen
+ goto mainloop
+		</textArea>
+	</fieldset>
+
+	<fieldset>
+		<legend>Output</legend>
+		<textArea id="output" rows="20" cols="60"></textArea>
+	</fieldset>
+	
+	<textArea id="error" rows="20" cols="60" style="color: red"></textArea>
+  
+	<script type="text/javascript">
+		Module = { 
+			  preRun: function() {
+				var position = 0;
+				var source = document.getElementById('input').value;
+				var out = document.getElementById('output');
+				var err = document.getElementById('error');
+				
+				out.value = '';
+				err.value = '';
+			  
+				function stdin() {
+					var ch = position >= source.length ? null : source.charCodeAt(position);
+					console.log('stdin', ch);
+					position++;
+					return ch;
+				}
+
+				function stdout(asciiCode) {
+					window.blah += String.fromCharCode(asciiCode);
+					out.value = out.value + String.fromCharCode(asciiCode);
+				}
+
+				function stderr(asciiCode) {
+					err.value = err.value + String.fromCharCode(asciiCode);
+				}
+
+				FS.init(stdin, stdout, stderr);
+				
+				FS.writeFile("default.inc", "\nbB.asm\n");
+			  },
+			  
+			  noInitialRun: true
+		};
+		
+		function clearOutput() {
+			document.getElementById('output').value = '';
+		}
+		
+		function executeApplication() {
+		
+			var remainingTries = 3;
+			function tryRunning() {
+				clearOutput();
+				preRun();
+				Module.callMain();
+				
+				/* Still trying to find out why does the compilation randomly fail so often... 
+				 * For now, just for demonstration purposes, there's a retry mechanism.
+				 */
+				setTimeout(function(){
+					var outValue = document.getElementById('output').value.trim();
+					if (outValue !== '' && outValue !== 'game') {
+						console.info('Compile successful.');
+						return;
+					}
+				
+					remainingTries--;
+					if (remainingTries <= 0) {
+						console.log('Completely failed to compile.');
+						return;
+					}
+				
+					console.log('Trying again... ' + remainingTries);
+					clearOutput();
+					tryRunning();
+				}, 500);
+			}
+			
+			console.log('First try...');
+			tryRunning();
+			
+		}
+	</script>
+    <script type="text/javascript" src="2600basic.em.js"></script>
+	<script>
+		setTimeout(executeApplication, 1000);
+	</script>
+  </body>
+</html>
