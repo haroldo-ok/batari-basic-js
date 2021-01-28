@@ -16,25 +16,29 @@
 		<legend>Input</legend>
 		<textArea id="input" rows="20" cols="60">
  rem Hello World
- dim turndelay=b
- dim collcount=b
 
- if turndelay{1} then player1: 
-    %00100100
-    %00010100
-    %00011000
-    %00010000
-    %00111000
-    %00010000
-    %00011000
-    %00011000
+ playfield:
+................................
+......X.X.XXX.X...X...XXX.......
+......X.X.X...X...X...X.X.......
+......XXX.XX..X...X...X.X.......
+......X.X.X...X...X...X.X.......
+......X.X.XXX.XXX.XXX.XXX.......
+................................
+.....X...X.XXX.XX..X...XX.......
+.....X...X.X.X.X.X.X...X.X......
+.....X.X.X.X.X.XX..X...X.X......
+.....XX.XX.XXX.X.X.XXX.XX.......
 end
 
- COLUPF = 14
+ COLUPF = 22
+ COLUBK = 2
 
 mainloop
  drawscreen
+ score = score + 1
  goto mainloop
+
 		</textArea>
 	</fieldset>
 
@@ -84,13 +88,51 @@ mainloop
 			document.getElementById('output').value = '';
 		}
 		
+		function setupStdin(fs, code) {
+			var i = 0;
+			fs.init(function () { return i < code.length ? code.charCodeAt(i++) : null; });
+		}
+		
+		function stderr(asciiCode) {
+			var err = document.getElementById('error');
+			err.value = err.value + String.fromCharCode(asciiCode);
+		}
+
+		function preprocessBatariBasic(code) {
+			var bbout = "";
+			function addbbout_fn(s) {
+				bbout += s;
+				bbout += "\n";
+			}
+			var BBPRE = preprocess({
+				noInitialRun: true,
+				//logReadFiles:true,
+				print: addbbout_fn,
+				printErr: stderr,
+				noFSInit: true,
+			});
+			var FS = BBPRE['FS'];
+			setupStdin(FS, code);
+			BBPRE.callMain([]);
+			console.log("preprocess " + code.length + " -> " + bbout.length + " bytes");
+			return bbout;
+		}
+	
 		function executeApplication() {
 		
 			var remainingTries = 3;
 			function tryRunning() {
 				clearOutput();
+				/*
 				preRun();
 				Module.callMain();
+				*/
+				
+				var source = document.getElementById('input').value;
+				var out = document.getElementById('output');
+				
+				out.value = preprocessBatariBasic(source);
+				
 				
 				/* Still trying to find out why does the compilation randomly fail so often... 
 				 * For now, just for demonstration purposes, there's a retry mechanism.
@@ -119,7 +161,8 @@ mainloop
 			
 		}
 	</script>
-    <script type="text/javascript" src="2600basic.em.js"></script>
+    <script type="text/javascript" src="bb2600basic.js"></script>
+    <script type="text/javascript" src="bbpreprocess.js"></script>
 	<script>
 		setTimeout(executeApplication, 1000);
 	</script>
