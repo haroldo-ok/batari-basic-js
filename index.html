@@ -14,7 +14,7 @@
   
 	<fieldset>
 		<legend>Input</legend>
-		<textArea id="input" rows="20" cols="60">
+		<textArea id="input" rows="20" cols="40">
  rem Hello World
 
  playfield:
@@ -43,11 +43,16 @@ mainloop
 	</fieldset>
 
 	<fieldset>
-		<legend>Output</legend>
-		<textArea id="output" rows="20" cols="60"></textArea>
+		<legend>Preprocess</legend>
+		<textArea id="preprocess" rows="20" cols="40"></textArea>
 	</fieldset>
 	
-	<textArea id="error" rows="20" cols="60" style="color: red"></textArea>
+	<fieldset>
+		<legend>Output</legend>
+		<textArea id="output" rows="20" cols="40"></textArea>
+	</fieldset>
+	
+	<textArea id="error" rows="20" cols="40" style="color: red"></textArea>
   
 	<script type="text/javascript">
 		Module = { 
@@ -85,6 +90,7 @@ mainloop
 		};
 		
 		function clearOutput() {
+			document.getElementById('preprocess').value = '';
 			document.getElementById('output').value = '';
 		}
 		
@@ -129,9 +135,7 @@ mainloop
 				*/
 				
 				var source = document.getElementById('input').value;
-				var out = document.getElementById('output');
-				
-				out.value = preprocessBatariBasic(source);
+				document.getElementById('preprocess').value = preprocessBatariBasic(source);
 				
 				
 				/* Still trying to find out why does the compilation randomly fail so often... 
