@@ -14,36 +14,45 @@
   
 	<fieldset>
 		<legend>Input</legend>
-		<textArea id="input" rows="20" cols="60">
+		<textArea id="input" rows="20" cols="40">
  rem Hello World
- dim turndelay=b
- dim collcount=b
 
- if turndelay{1} then player1: 
-    %00100100
-    %00010100
-    %00011000
-    %00010000
-    %00111000
-    %00010000
-    %00011000
-    %00011000
+ playfield:
+................................
+......X.X.XXX.X...X...XXX.......
+......X.X.X...X...X...X.X.......
+......XXX.XX..X...X...X.X.......
+......X.X.X...X...X...X.X.......
+......X.X.XXX.XXX.XXX.XXX.......
+................................
+.....X...X.XXX.XX..X...XX.......
+.....X...X.X.X.X.X.X...X.X......
+.....X.X.X.X.X.XX..X...X.X......
+.....XX.XX.XXX.X.X.XXX.XX.......
 end
 
- COLUPF = 14
+ COLUPF = 22
+ COLUBK = 2
 
 mainloop
  drawscreen
+ score = score + 1
  goto mainloop
+
 		</textArea>
 	</fieldset>
 
 	<fieldset>
-		<legend>Output</legend>
-		<textArea id="output" rows="20" cols="60"></textArea>
+		<legend>Preprocess</legend>
+		<textArea id="preprocess" rows="20" cols="40"></textArea>
 	</fieldset>
 	
-	<textArea id="error" rows="20" cols="60" style="color: red"></textArea>
+	<fieldset>
+		<legend>Output</legend>
+		<textArea id="output" rows="20" cols="40"></textArea>
+	</fieldset>
+	
+	<textArea id="error" rows="20" cols="40" style="color: red"></textArea>
   
 	<script type="text/javascript">
 		Module = { 
@@ -81,7 +90,129 @@ mainloop
 		};
 		
 		function clearOutput() {
+			document.getElementById('preprocess').value = '';
 			document.getElementById('output').value = '';
+		}
+		
+		function setupStdin(fs, code) {
+			var i = 0;
+			fs.init(function () { return i < code.length ? code.charCodeAt(i++) : null; });
+		}
+		
+		function stderr(asciiCode) {
+			var err = document.getElementById('error');
+			err.value = err.value + String.fromCharCode(asciiCode);
+		}
+
+		function preprocessBatariBasic(code) {
+			var bbout = "";
+			function addbbout_fn(s) {
+				bbout += s;
+				bbout += "\n";
+			}
+			var BBPRE = preprocess({
+				noInitialRun: true,
+				//logReadFiles:true,
+				print: addbbout_fn,
+				printErr: stderr,
+				noFSInit: true,
+			});
+			var FS = BBPRE['FS'];
+			setupStdin(FS, code);
+			BBPRE.callMain([]);
+			console.log("preprocess " + code.length + " -> " + bbout.length + " bytes");
+			return bbout;
+		}
+		
+		function execMain(mod, args) {
+			var run = mod.callMain || mod.run; // TODO: run?
+			run(args);
+		}
+
+		function compileBatariBasic(code) {
+			// stdout
+			var asmout = "";
+			function addasmout_fn(s) {
+				asmout += s;
+				asmout += "\n";
+			}
+			// stderr
+			var re_err1 = /[(](\d+)[)]:?\s*(.+)/;
+			var errors = [];
+			var errline = 0;
+			function match_fn(s) {
+				console.log(s);
+				var matches = re_err1.exec(s);
+				if (matches) {
+					errline = parseInt(matches[1]);
+					errors.push({
+						line: errline,
+						msg: matches[2]
+					});
+				}
+			}
+			//gatherFiles(step, { mainFilePath: "main.bas" });
+			//var destpath = step.prefix + '.asm';
+			var destpath = 'main.asm';			
+			//if (staleFiles(step, [destpath])) {
+			{
+				var BB = bb2600basic({
+					noInitialRun: true,
+					//logReadFiles:true,
+					print: addasmout_fn,
+					printErr: match_fn,
+					noFSInit: true,
+					TOTAL_MEMORY: 64 * 1024 * 1024,
+				});
+				var FS = BB['FS'];
+				//populateFiles(step, FS);
+				// preprocess, pipe file to stdin
+				/*
+				var code = getWorkFileAsString(step.path);
+				code = preprocessBatariBasic(code);
+				*/
+				setupStdin(FS, code);
+				//setupFS(FS, '2600basic');
+				execMain(BB, ["-i", "/share"]);
+				if (errors.length)
+					return { errors: errors };
+					
+				return asmout;
+				// build final assembly output from include file list
+				/*
+				var includesout = FS.readFile("includes.bB", { encoding: 'utf8' });
+				var redefsout = FS.readFile("2600basic_variable_redefs.h", { encoding: 'utf8' });
+				var includes = includesout.trim().split("\n");
+				var combinedasm = "";
+				var splitasm = asmout.split("bB.asm file is split here");
+				for (var _i = 0, includes_1 = includes; _i < includes_1.length; _i++) {
+					var incfile = includes_1[_i];
+					var inctext;
+					if (incfile == "bB.asm")
+						inctext = splitasm[0];
+					else if (incfile == "bB2.asm")
+						inctext = splitasm[1];
+					else
+						inctext = FS.readFile("/share/includes/" + incfile, { encoding: 'utf8' });
+					console.log(incfile, inctext.length);
+					combinedasm += "\n\n;;;" + incfile + "\n\n";
+					combinedasm += inctext;
+				}
+				// TODO: ; bB.asm file is split here
+				putWorkFile(destpath, combinedasm);
+				putWorkFile("2600basic.h", FS.readFile("/share/includes/2600basic.h"));
+				putWorkFile("2600basic_variable_redefs.h", redefsout);
+				*/
+			}
+			/*
+			return {
+				nexttool: "dasm",
+				path: destpath,
+				args: [destpath],
+				files: [destpath, "2600basic.h", "2600basic_variable_redefs.h"],
+				bblines: true,
+			};
+			*/
 		}
 		
 		function executeApplication() {
@@ -89,8 +220,18 @@ mainloop
 			var remainingTries = 3;
 			function tryRunning() {
 				clearOutput();
+				/*
 				preRun();
 				Module.callMain();
+				*/
+				
+				var source = document.getElementById('input').value;
+				var preprocessed = preprocessBatariBasic(source);
+				document.getElementById('preprocess').value = preprocessed;
+				
+				var assembly = compileBatariBasic(preprocessed);
+				document.getElementById('output').value = assembly;
+				
 				
 				/* Still trying to find out why does the compilation randomly fail so often... 
 				 * For now, just for demonstration purposes, there's a retry mechanism.
@@ -119,7 +260,8 @@ mainloop
 			
 		}
 	</script>
-    <script type="text/javascript" src="2600basic.em.js"></script>
+    <script type="text/javascript" src="bb2600basic.js"></script>
+    <script type="text/javascript" src="bbpreprocess.js"></script>
 	<script>
 		setTimeout(executeApplication, 1000);
 	</script>
