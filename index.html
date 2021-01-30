@@ -196,9 +196,7 @@ mainloop
 				if (errors.length)
 					return { errors: errors };
 					
-				return asmout;
 				// build final assembly output from include file list
-				/*
 				var includesout = FS.readFile("includes.bB", { encoding: 'utf8' });
 				var redefsout = FS.readFile("2600basic_variable_redefs.h", { encoding: 'utf8' });
 				var includes = includesout.trim().split("\n");
@@ -217,11 +215,15 @@ mainloop
 					combinedasm += "\n\n;;;" + incfile + "\n\n";
 					combinedasm += inctext;
 				}
+				
+				/*
 				// TODO: ; bB.asm file is split here
 				putWorkFile(destpath, combinedasm);
 				putWorkFile("2600basic.h", FS.readFile("/share/includes/2600basic.h"));
 				putWorkFile("2600basic_variable_redefs.h", redefsout);
 				*/
+					
+				return combinedasm;
 			}
 			/*
 			return {
