@@ -128,7 +128,7 @@ mainloop
 			var run = mod.callMain || mod.run; // TODO: run?
 			run(args);
 		}
-
+		
 		function compileBatariBasic(code) {
 			// stdout
 			var asmout = "";
@@ -165,7 +165,7 @@ mainloop
 					TOTAL_MEMORY: 64 * 1024 * 1024,
 				});
 				var FS = BB['FS'];
-				//populateFiles(step, FS);
+				//populateFiles(FS);
 				// preprocess, pipe file to stdin
 				/*
 				var code = getWorkFileAsString(step.path);
@@ -262,6 +262,7 @@ mainloop
 	</script>
     <script type="text/javascript" src="bb2600basic.js"></script>
     <script type="text/javascript" src="bbpreprocess.js"></script>
+    <script type="text/javascript" src="fs2600basic.js"></script>
 	<script>
 		setTimeout(executeApplication, 1000);
 	</script>
