@@ -47,7 +47,7 @@ mainloop
 		<textArea id="preprocess" rows="20" cols="40"></textArea>
 	</fieldset>
 	
-	<fieldset>
+	<fieldset id="outputMarker">
 		<legend>Output</legend>
 		<textArea id="output" rows="20" cols="40"></textArea>
 	</fieldset>
@@ -91,7 +91,6 @@ mainloop
 		
 		function clearOutput() {
 			document.getElementById('preprocess').value = '';
-			document.getElementById('output').value = '';
 		}
 		
 		function setupStdin(fs, code) {
@@ -102,6 +101,16 @@ mainloop
 		function stderr(asciiCode) {
 			var err = document.getElementById('error');
 			err.value = err.value + String.fromCharCode(asciiCode);
+		}
+		
+		async function loadFileSystem() {
+			const metadata = (await fetch('fs2600basic.js.metadata')).json();
+			const content = (await fetch('fs2600basic.data')).blob();
+			const files = metadata.files.map(({filename, start, end}) => ({
+				filename, start, end,
+				content: null
+			}));
+			return files;
 		}
 
 		function preprocessBatariBasic(code) {
@@ -128,7 +137,9 @@ mainloop
 			var run = mod.callMain || mod.run; // TODO: run?
 			run(args);
 		}
-
+		
+		// To obtain the JSON: JSON.stringify(Object.fromEntries(Object.keys(FS.lookupPath('/share/includes', {}).node.contents).map(name => ([name, FS.readFile('/share/includes/' + name, {encoding: 'utf8'})]))))
+		
 		function compileBatariBasic(code) {
 			// stdout
 			var asmout = "";
@@ -165,21 +176,26 @@ mainloop
 					TOTAL_MEMORY: 64 * 1024 * 1024,
 				});
 				var FS = BB['FS'];
-				//populateFiles(step, FS);
+				//populateFiles(FS);
 				// preprocess, pipe file to stdin
 				/*
 				var code = getWorkFileAsString(step.path);
 				code = preprocessBatariBasic(code);
 				*/
+				FS.mkdir('share');
+				FS.mkdir('share/includes');
+				Object.entries(DEFAULT_INCLUDES).forEach(([name, content]) => {
+					FS.writeFile('share/includes/' + name, content, { encoding: 'utf8' });
+				});
+				
 				setupStdin(FS, code);
+				FS.writeFile('main.bas', code, { encoding: 'utf8' });
 				//setupFS(FS, '2600basic');
-				execMain(BB, ["-i", "/share"]);
+				execMain(BB, ["-i", "/share", 'main.bas']);
 				if (errors.length)
 					return { errors: errors };
 					
-				return asmout;
 				// build final assembly output from include file list
-				/*
 				var includesout = FS.readFile("includes.bB", { encoding: 'utf8' });
 				var redefsout = FS.readFile("2600basic_variable_redefs.h", { encoding: 'utf8' });
 				var includes = includesout.trim().split("\n");
@@ -198,11 +214,19 @@ mainloop
 					combinedasm += "\n\n;;;" + incfile + "\n\n";
 					combinedasm += inctext;
 				}
+				
+				/*
 				// TODO: ; bB.asm file is split here
 				putWorkFile(destpath, combinedasm);
 				putWorkFile("2600basic.h", FS.readFile("/share/includes/2600basic.h"));
 				putWorkFile("2600basic_variable_redefs.h", redefsout);
 				*/
+					
+				return {
+					'main.asm': combinedasm,
+					'2600basic.h': FS.readFile("/share/includes/2600basic.h", { encoding: 'utf8' }),
+					'2600basic_variable_redefs.h': redefsout
+				};
 			}
 			/*
 			return {
@@ -219,40 +243,16 @@ mainloop
 		
 			var remainingTries = 3;
 			function tryRunning() {
-				clearOutput();
-				/*
-				preRun();
-				Module.callMain();
-				*/
-				
 				var source = document.getElementById('input').value;
 				var preprocessed = preprocessBatariBasic(source);
 				document.getElementById('preprocess').value = preprocessed;
 				
-				var assembly = compileBatariBasic(preprocessed);
-				document.getElementById('output').value = assembly;
-				
-				
-				/* Still trying to find out why does the compilation randomly fail so often... 
-				 * For now, just for demonstration purposes, there's a retry mechanism.
-				 */
-				setTimeout(function(){
-					var outValue = document.getElementById('output').value.trim();
-					if (outValue !== '' && outValue !== 'game') {
-						console.info('Compile successful.');
-						return;
-					}
-				
-					remainingTries--;
-					if (remainingTries <= 0) {
-						console.log('Completely failed to compile.');
-						return;
-					}
-				
-					console.log('Trying again... ' + remainingTries);
-					clearOutput();
-					tryRunning();
-				}, 500);
+				var assemblyFiles = compileBatariBasic(preprocessed);				
+				document.getElementById('outputMarker').outerHTML = Object.entries(assemblyFiles).map(([name, content]) => {
+					return '<fieldset><legend>' + name + '</legend>' +
+					'<textArea rows="20" cols="40">' + content + '</textArea>' +
+					'</fieldset>';
+				}).join();
 			}
 			
 			console.log('First try...');
@@ -262,6 +262,7 @@ mainloop
 	</script>
     <script type="text/javascript" src="bb2600basic.js"></script>
     <script type="text/javascript" src="bbpreprocess.js"></script>
+    <script type="text/javascript" src="fsContents.js"></script>
 	<script>
 		setTimeout(executeApplication, 1000);
 	</script>
