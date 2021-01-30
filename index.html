@@ -47,7 +47,7 @@ mainloop
 		<textArea id="preprocess" rows="20" cols="40"></textArea>
 	</fieldset>
 	
-	<fieldset>
+	<fieldset id="outputMarker">
 		<legend>Output</legend>
 		<textArea id="output" rows="20" cols="40"></textArea>
 	</fieldset>
@@ -91,7 +91,6 @@ mainloop
 		
 		function clearOutput() {
 			document.getElementById('preprocess').value = '';
-			document.getElementById('output').value = '';
 		}
 		
 		function setupStdin(fs, code) {
@@ -223,7 +222,11 @@ mainloop
 				putWorkFile("2600basic_variable_redefs.h", redefsout);
 				*/
 					
-				return combinedasm;
+				return {
+					'main.asm': combinedasm,
+					'2600basic.h': FS.readFile("/share/includes/2600basic.h", { encoding: 'utf8' }),
+					'2600basic_variable_redefs.h': redefsout
+				};
 			}
 			/*
 			return {
@@ -240,40 +243,16 @@ mainloop
 		
 			var remainingTries = 3;
 			function tryRunning() {
-				clearOutput();
-				/*
-				preRun();
-				Module.callMain();
-				*/
-				
 				var source = document.getElementById('input').value;
 				var preprocessed = preprocessBatariBasic(source);
 				document.getElementById('preprocess').value = preprocessed;
 				
-				var assembly = compileBatariBasic(preprocessed);
-				document.getElementById('output').value = assembly;
-				
-				
-				/* Still trying to find out why does the compilation randomly fail so often... 
-				 * For now, just for demonstration purposes, there's a retry mechanism.
-				 */
-				setTimeout(function(){
-					var outValue = document.getElementById('output').value.trim();
-					if (outValue !== '' && outValue !== 'game') {
-						console.info('Compile successful.');
-						return;
-					}
-				
-					remainingTries--;
-					if (remainingTries <= 0) {
-						console.log('Completely failed to compile.');
-						return;
-					}
-				
-					console.log('Trying again... ' + remainingTries);
-					clearOutput();
-					tryRunning();
-				}, 500);
+				var assemblyFiles = compileBatariBasic(preprocessed);				
+				document.getElementById('outputMarker').outerHTML = Object.entries(assemblyFiles).map(([name, content]) => {
+					return '<fieldset><legend>' + name + '</legend>' +
+					'<textArea rows="20" cols="40">' + content + '</textArea>' +
+					'</fieldset>';
+				}).join();
 			}
 			
 			console.log('First try...');
