@@ -103,6 +103,16 @@ mainloop
 			var err = document.getElementById('error');
 			err.value = err.value + String.fromCharCode(asciiCode);
 		}
+		
+		async function loadFileSystem() {
+			const metadata = (await fetch('fs2600basic.js.metadata')).json();
+			const content = (await fetch('fs2600basic.data')).blob();
+			const files = metadata.files.map(({filename, start, end}) => ({
+				filename, start, end,
+				content: null
+			}));
+			return files;
+		}
 
 		function preprocessBatariBasic(code) {
 			var bbout = "";
