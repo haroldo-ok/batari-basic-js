@@ -172,8 +172,9 @@ mainloop
 				code = preprocessBatariBasic(code);
 				*/
 				setupStdin(FS, code);
+				FS.writeFile('main.bas', code, { encoding: 'utf8' });
 				//setupFS(FS, '2600basic');
-				execMain(BB, ["-i", "/share"]);
+				execMain(BB, ["-i", "/share", 'main.bas']);
 				if (errors.length)
 					return { errors: errors };
 					
@@ -262,7 +263,6 @@ mainloop
 	</script>
     <script type="text/javascript" src="bb2600basic.js"></script>
     <script type="text/javascript" src="bbpreprocess.js"></script>
-    <script type="text/javascript" src="fs2600basic.js"></script>
 	<script>
 		setTimeout(executeApplication, 1000);
 	</script>
