@@ -183,6 +183,12 @@ mainloop
 				var code = getWorkFileAsString(step.path);
 				code = preprocessBatariBasic(code);
 				*/
+				FS.mkdir('share');
+				FS.mkdir('share/includes');
+				Object.entries(DEFAULT_INCLUDES).forEach(([name, content]) => {
+					FS.writeFile('share/includes/' + name, content, { encoding: 'utf8' });
+				});
+				
 				setupStdin(FS, code);
 				FS.writeFile('main.bas', code, { encoding: 'utf8' });
 				//setupFS(FS, '2600basic');
@@ -275,6 +281,7 @@ mainloop
 	</script>
     <script type="text/javascript" src="bb2600basic.js"></script>
     <script type="text/javascript" src="bbpreprocess.js"></script>
+    <script type="text/javascript" src="fsContents.js"></script>
 	<script>
 		setTimeout(executeApplication, 1000);
 	</script>
