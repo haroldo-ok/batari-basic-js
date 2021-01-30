@@ -139,6 +139,8 @@ mainloop
 			run(args);
 		}
 		
+		// To obtain the JSON: JSON.stringify(Object.fromEntries(Object.keys(FS.lookupPath('/share/includes', {}).node.contents).map(name => ([name, FS.readFile('/share/includes/' + name, {encoding: 'utf8'})]))))
+		
 		function compileBatariBasic(code) {
 			// stdout
 			var asmout = "";
