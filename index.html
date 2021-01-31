@@ -479,6 +479,8 @@ mainloop
 				
 				var assemblyOutputs = assembleDASM(assemblyFiles);
 				console.info('Output files generated from assemblies', assemblyOutputs);
+				
+				saveAs(new Blob([assemblyOutputs.output]), 'generated-rom.bin');
 			}
 			
 			console.log('First try...');
@@ -490,6 +492,7 @@ mainloop
     <script type="text/javascript" src="bbpreprocess.js"></script>
     <script type="text/javascript" src="dasm.js"></script>
     <script type="text/javascript" src="fsContents.js"></script>
+    <script type="text/javascript" src="FileSaver.js"></script>
 	<script>
 		setTimeout(executeApplication, 1000);
 	</script>
