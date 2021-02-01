@@ -4,9 +4,10 @@
 	<title>A quick and dirty experiment on compiling Batari Basic programs on the Browser.</title>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">  
   </head>
   <body>
-	<h1>A quick and dirty experiment on compiling Batari Basic programs on the Browser.</h1>
+	<h1 class="title">A quick and dirty experiment on compiling Batari Basic programs on the Browser.</h1>
   
 	<style>
 		fieldset {
@@ -14,9 +15,9 @@
 		}
 	</style>
   
-	<fieldset>
-		<legend>Input</legend>
-		<textArea id="input" rows="20" cols="40">
+	<div class="panel">
+		<p class="panel-heading">Input</p>
+		<textArea id="input" class="textarea" rows="10">
  rem Hello World
 
  playfield:
@@ -42,19 +43,21 @@ mainloop
  goto mainloop
 
 		</textArea>
-	</fieldset>
+	</div>
 
-	<fieldset>
-		<legend>Preprocess</legend>
-		<textArea id="preprocess" rows="20" cols="40"></textArea>
-	</fieldset>
+	<div class="panel">
+		<p class="panel-heading">Preprocess</p>
+		<textArea id="preprocess" class="textarea" rows="10"></textArea>
+	</div>
 	
-	<fieldset id="outputMarker">
-		<legend>Output</legend>
+	<div id="outputMarker" class="panel">
+		<p class="panel-heading">Output</p>
 		<textArea id="output" rows="20" cols="40"></textArea>
-	</fieldset>
+	</div>
 	
-	<textArea id="error" rows="20" cols="40" style="color: red"></textArea>
+	<footer class="footer">
+		<textArea id="error" class="textarea" rows="10" style="color: red"></textArea>
+	</footer>
   
 	<script type="text/javascript">
 		Module = { 
@@ -474,9 +477,9 @@ mainloop
 				var assemblyFiles = compileBatariBasic(preprocessed);				
 				console.info('Assembly files generated from BASIC source', assemblyFiles);
 				document.getElementById('outputMarker').outerHTML = Object.entries(assemblyFiles).map(([name, content]) => {
-					return '<fieldset><legend>' + name + '</legend>' +
-					'<textArea rows="20" cols="40">' + content + '</textArea>' +
-					'</fieldset>';
+					return '<div class="panel"><p class="panel-heading">' + name + '</p>' +
+					'<textArea class="textarea" rows="10">' + content + '</textArea>' +
+					'</div>';
 				}).join();
 				
 				var assemblyOutputs = assembleDASM(assemblyFiles);
