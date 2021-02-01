@@ -10,14 +10,30 @@
 	<h1 class="title">A quick and dirty experiment on compiling Batari Basic programs on the Browser.</h1>
   
 	<style>
-		fieldset {
-			display: inline-block;
+		textarea {
+			white-space: pre;
+		}
+		
+		.fill-vertically {
+			height: 60vh;
+			overflow-y: auto;
+		}
+		
+		.full-height {
+			height: 100%;
+		}
+		
+		.full-height-without-heading.textarea[rows] {
+			height: calc(100% - 3em);
 		}
 	</style>
-  
-	<div class="panel">
-		<p class="panel-heading">Input</p>
-		<textArea id="input" class="textarea" rows="10">
+
+	<div class="columns is-mobile">
+
+		<div class="column fill-vertically">
+			<div class="panel full-height">
+				<p class="panel-heading">Input</p>
+				<textArea id="input" class="textarea is-family-code full-height-without-heading" rows="10">
  rem Hello World
 
  playfield:
@@ -42,21 +58,28 @@ mainloop
  score = score + 1
  goto mainloop
 
-		</textArea>
-	</div>
+				</textArea>
+			</div>
+		</div>
 
-	<div class="panel">
-		<p class="panel-heading">Preprocess</p>
-		<textArea id="preprocess" class="textarea" rows="10"></textArea>
-	</div>
-	
-	<div id="outputMarker" class="panel">
-		<p class="panel-heading">Output</p>
-		<textArea id="output" rows="20" cols="40"></textArea>
+		<div class="column fill-vertically">
+		
+			<div class="panel">
+				<p class="panel-heading">Preprocessed</p>
+				<textArea id="preprocess" class="textarea is-family-code"></textArea>
+			</div>
+			
+			<div id="outputMarker" class="panel">
+				<p class="panel-heading">Output</p>
+				<textArea id="output" rows="20" cols="40"></textArea>
+			</div>
+			
+		</div>
+		
 	</div>
 	
 	<footer class="footer">
-		<textArea id="error" class="textarea" rows="10" style="color: red"></textArea>
+		<textArea id="error" class="textarea is-family-code" style="color: red"></textArea>
 	</footer>
   
 	<script type="text/javascript">
@@ -478,7 +501,7 @@ mainloop
 				console.info('Assembly files generated from BASIC source', assemblyFiles);
 				document.getElementById('outputMarker').outerHTML = Object.entries(assemblyFiles).map(([name, content]) => {
 					return '<div class="panel"><p class="panel-heading">' + name + '</p>' +
-					'<textArea class="textarea" rows="10">' + content + '</textArea>' +
+					'<textArea class="textarea is-family-code">' + content + '</textArea>' +
 					'</div>';
 				}).join();
 				
