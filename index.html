@@ -82,6 +82,9 @@ mainloop
 				<div class="block">
 					<button id="downloadROM" class="button is-success" disabled>Download ROM</button>
 				</div>
+				<div id="javatari" class="block">
+					<div id="javatari-screen"></div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -556,6 +559,8 @@ mainloop
 				var downloadButton = document.getElementById('downloadROM');
 				downloadButton.onclick = () => saveAs(new Blob([assemblyOutputs.output]), 'generated-rom.bin');
 				downloadButton.disabled = false;
+				
+				Javatari.fileLoader.loadFromContent('main.bin', assemblyOutputs.output);
 			}
 			
 			console.log('First try...');
@@ -566,5 +571,6 @@ mainloop
 	<script>
 		setTimeout(executeApplication, 1000);
 	</script>
+	<script src="javatari.js"></script>
   </body>
 </html>
