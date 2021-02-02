@@ -26,12 +26,16 @@
 		.full-height-without-heading.textarea[rows] {
 			height: calc(100% - 3em);
 		}
+		
+		.footer {
+			padding: 0;
+		}
 	</style>
 
 	<div class="columns is-mobile">
 
 		<div class="column fill-vertically">
-			<div class="panel full-height">
+			<div class="panel full-height is-primary">
 				<p class="panel-heading">Input</p>
 				<textArea id="input" class="textarea is-family-code full-height-without-heading" rows="10">
  rem Hello World
@@ -64,7 +68,7 @@ mainloop
 
 		<div class="column fill-vertically">
 		
-			<div class="panel">
+			<div class="panel is-info">
 				<p class="panel-heading">Preprocessed</p>
 				<textArea id="preprocess" class="textarea is-family-code"></textArea>
 			</div>
@@ -76,10 +80,19 @@ mainloop
 			
 		</div>
 		
+		<div class="column fill-vertically is-success">
+			<div class="panel is-success">
+				<p class="panel-heading">Results</p>
+				<textArea class="textarea is-family-code"></textArea>
+			</div>
+		</div>
 	</div>
 	
 	<footer class="footer">
-		<textArea id="error" class="textarea is-family-code" style="color: red"></textArea>
+		<div class="panel is-danger">
+			<p class="panel-heading">Errors</p>
+			<textArea id="error" class="textarea is-family-code has-text-danger" style="color: red"></textArea>
+		</div>
 	</footer>
   
 	<script type="text/javascript">
@@ -500,7 +513,7 @@ mainloop
 				var assemblyFiles = compileBatariBasic(preprocessed);				
 				console.info('Assembly files generated from BASIC source', assemblyFiles);
 				document.getElementById('outputMarker').outerHTML = Object.entries(assemblyFiles).map(([name, content]) => {
-					return '<div class="panel"><p class="panel-heading">' + name + '</p>' +
+					return '<div class="panel is-info"><p class="panel-heading">' + name + '</p>' +
 					'<textArea class="textarea is-family-code">' + content + '</textArea>' +
 					'</div>';
 				}).join();
