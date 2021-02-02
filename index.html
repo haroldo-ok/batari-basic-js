@@ -102,6 +102,7 @@ mainloop
     <script type="text/javascript" src="fsContents.js"></script>
     <script type="text/javascript" src="FileSaver.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/underscore@1.12.0/underscore-min.js"></script>
 	
 	<script type="text/javascript">
 		Module = { 
@@ -141,7 +142,7 @@ mainloop
 		var OUTPUT_TEMPLATE = Handlebars.compile(
 					'{{#each contents}}' +
 					'	<div class="panel is-{{type}}"><p class="panel-heading">{{name}}</p>' +
-					'		<textArea class="textarea is-family-code">{{content}}</textArea>' +
+					'		<textArea class="textarea is-family-code" readonly>{{content}}</textArea>' +
 					'	</div>' +
 					'{{/each}}');
 		function updateOutput(contents, type) {
@@ -562,6 +563,11 @@ mainloop
 				
 				Javatari.fileLoader.loadFromContent('main.bin', assemblyOutputs.output);
 			}
+			
+			var inputArea = document.getElementById('input');
+			var inputEvent = _.debounce(tryRunning, 300);
+			inputArea.onchange = inputEvent;
+			inputArea.onkeypress = inputEvent;
 			
 			console.log('First try...');
 			tryRunning();
