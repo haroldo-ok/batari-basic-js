@@ -1,20 +1,43 @@
 <!doctype html>
 <html lang="en-us">
   <head>
+	<title>A quick and dirty experiment on compiling Batari Basic programs on the Browser.</title>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">  
   </head>
   <body>
+	<h1 class="title">A quick and dirty experiment on compiling Batari Basic programs on the Browser.</h1>
   
 	<style>
-		fieldset {
-			display: inline-block;
+		textarea {
+			white-space: pre;
+		}
+		
+		.fill-vertically {
+			height: 60vh;
+			overflow-y: auto;
+		}
+		
+		.full-height {
+			height: 100%;
+		}
+		
+		.full-height-without-heading.textarea[rows] {
+			height: calc(100% - 3em);
+		}
+		
+		.footer {
+			padding: 0;
 		}
 	</style>
-  
-	<fieldset>
-		<legend>Input</legend>
-		<textArea id="input" rows="20" cols="40">
+
+	<div class="columns is-mobile">
+
+		<div class="column fill-vertically">
+			<div class="panel full-height is-primary">
+				<p class="panel-heading">Input</p>
+				<textArea id="input" class="textarea is-family-code full-height-without-heading" rows="10">
  rem Hello World
 
  playfield:
@@ -39,21 +62,48 @@ mainloop
  score = score + 1
  goto mainloop
 
-		</textArea>
-	</fieldset>
+				</textArea>
+			</div>
+		</div>
 
-	<fieldset>
-		<legend>Preprocess</legend>
-		<textArea id="preprocess" rows="20" cols="40"></textArea>
-	</fieldset>
+		<div id="output" class="column fill-vertically">
+		
+			<div class="panel is-warning">
+				<p class="panel-heading">Loading</p>
+				<textArea id="preprocess" class="textarea is-family-code">Please wait...</textArea>
+			</div>
+			
+		</div>
+		
+		<div class="column fill-vertically is-success">
+			<div class="panel is-success">
+				<p class="panel-heading">Results</p>
+				<div class="block"></div>
+				<div class="block">
+					<button id="downloadROM" class="button is-success" disabled>Download ROM</button>
+				</div>
+				<div id="javatari" class="block">
+					<div id="javatari-screen"></div>
+				</div>
+			</div>
+		</div>
+	</div>
 	
-	<fieldset id="outputMarker">
-		<legend>Output</legend>
-		<textArea id="output" rows="20" cols="40"></textArea>
-	</fieldset>
-	
-	<textArea id="error" rows="20" cols="40" style="color: red"></textArea>
+	<footer class="footer">
+		<div class="panel is-danger">
+			<p class="panel-heading">Errors</p>
+			<textArea id="error" class="textarea is-family-code has-text-danger" style="color: red"></textArea>
+		</div>
+	</footer>
   
+    <script type="text/javascript" src="bb2600basic.js"></script>
+    <script type="text/javascript" src="bbpreprocess.js"></script>
+    <script type="text/javascript" src="dasm.js"></script>
+    <script type="text/javascript" src="fsContents.js"></script>
+    <script type="text/javascript" src="FileSaver.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/underscore@1.12.0/underscore-min.js"></script>
+	
 	<script type="text/javascript">
 		Module = { 
 			  preRun: function() {
@@ -89,8 +139,21 @@ mainloop
 			  noInitialRun: true
 		};
 		
+		var OUTPUT_TEMPLATE = Handlebars.compile(
+					'{{#each contents}}' +
+					'	<div class="panel is-{{type}}"><p class="panel-heading">{{name}}</p>' +
+					'		<textArea class="textarea is-family-code" readonly>{{content}}</textArea>' +
+					'	</div>' +
+					'{{/each}}');
+		function updateOutput(contents, type) {
+			document.getElementById('output').innerHTML = OUTPUT_TEMPLATE({
+				contents: Object.entries(contents).map(([name, content]) => ({name, content, type})), 		
+			});
+		}
+		
 		function clearOutput() {
-			document.getElementById('preprocess').value = '';
+			updateOutput({'Compiling': 'Please wait...'}, 'warning');
+			document.getElementById('downloadROM').disabled = true;
 		}
 		
 		function setupStdin(fs, code) {
@@ -111,7 +174,7 @@ mainloop
 				content: null
 			}));
 			return files;
-		}
+		}				
 
 		function preprocessBatariBasic(code) {
 			var bbout = "";
@@ -119,16 +182,25 @@ mainloop
 				bbout += s;
 				bbout += "\n";
 			}
+			
+			var errors = [];
+			function adderror_fn(s) {
+				errors.push(s);
+			}
+			
 			var BBPRE = preprocess({
 				noInitialRun: true,
 				//logReadFiles:true,
 				print: addbbout_fn,
-				printErr: stderr,
+				printErr: adderror_fn,
 				noFSInit: true,
 			});
 			var FS = BBPRE['FS'];
 			setupStdin(FS, code);
 			BBPRE.callMain([]);
+			if (errors.length) {
+				throw new Error("Errors while preprocessing:\n" + errors.join('\n'));
+			}
 			console.log("preprocess " + code.length + " -> " + bbout.length + " bytes");
 			return bbout;
 		}
@@ -465,36 +537,46 @@ mainloop
 			var remainingTries = 3;
 			function tryRunning() {
 				var source = document.getElementById('input').value;
-				var preprocessed = preprocessBatariBasic(source);
-				console.info('Preprocessing results.');
-				document.getElementById('preprocess').value = preprocessed;				
+								
+				var preprocessed = preprocessBatariBasic(source);				
+				console.info('Preprocessing results', preprocessed);
+				var preprocessedResults = {'Preprocessed': preprocessed};
+				updateOutput(preprocessedResults, 'info');
 				
 				var assemblyFiles = compileBatariBasic(preprocessed);				
 				console.info('Assembly files generated from BASIC source', assemblyFiles);
+				/*
 				document.getElementById('outputMarker').outerHTML = Object.entries(assemblyFiles).map(([name, content]) => {
-					return '<fieldset><legend>' + name + '</legend>' +
-					'<textArea rows="20" cols="40">' + content + '</textArea>' +
-					'</fieldset>';
+					return '<div class="panel is-info"><p class="panel-heading">' + name + '</p>' +
+					'<textArea class="textarea is-family-code">' + content + '</textArea>' +
+					'</div>';
 				}).join();
+				*/
+				updateOutput(Object.assign({}, preprocessedResults, assemblyFiles), 'info');
 				
 				var assemblyOutputs = assembleDASM(assemblyFiles);
 				console.info('Output files generated from assemblies', assemblyOutputs);
 				
-				saveAs(new Blob([assemblyOutputs.output]), 'generated-rom.bin');
+				var downloadButton = document.getElementById('downloadROM');
+				downloadButton.onclick = () => saveAs(new Blob([assemblyOutputs.output]), 'generated-rom.bin');
+				downloadButton.disabled = false;
+				
+				Javatari.fileLoader.loadFromContent('main.bin', assemblyOutputs.output);
 			}
+			
+			var inputArea = document.getElementById('input');
+			var inputEvent = _.debounce(tryRunning, 300);
+			inputArea.onchange = inputEvent;
+			inputArea.onkeypress = inputEvent;
 			
 			console.log('First try...');
 			tryRunning();
 			
 		}
 	</script>
-    <script type="text/javascript" src="bb2600basic.js"></script>
-    <script type="text/javascript" src="bbpreprocess.js"></script>
-    <script type="text/javascript" src="dasm.js"></script>
-    <script type="text/javascript" src="fsContents.js"></script>
-    <script type="text/javascript" src="FileSaver.js"></script>
 	<script>
 		setTimeout(executeApplication, 1000);
 	</script>
+	<script src="javatari.js"></script>
   </body>
 </html>
