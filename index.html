@@ -66,16 +66,11 @@ mainloop
 			</div>
 		</div>
 
-		<div class="column fill-vertically">
+		<div id="output" class="column fill-vertically">
 		
-			<div class="panel is-info">
-				<p class="panel-heading">Preprocessed</p>
-				<textArea id="preprocess" class="textarea is-family-code"></textArea>
-			</div>
-			
-			<div id="outputMarker" class="panel">
-				<p class="panel-heading">Output</p>
-				<textArea id="output" rows="20" cols="40"></textArea>
+			<div class="panel is-warning">
+				<p class="panel-heading">Loading</p>
+				<textArea id="preprocess" class="textarea is-family-code">Please wait...</textArea>
 			</div>
 			
 		</div>
@@ -95,6 +90,13 @@ mainloop
 		</div>
 	</footer>
   
+    <script type="text/javascript" src="bb2600basic.js"></script>
+    <script type="text/javascript" src="bbpreprocess.js"></script>
+    <script type="text/javascript" src="dasm.js"></script>
+    <script type="text/javascript" src="fsContents.js"></script>
+    <script type="text/javascript" src="FileSaver.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/handlebars@latest/dist/handlebars.js"></script>
+	
 	<script type="text/javascript">
 		Module = { 
 			  preRun: function() {
@@ -130,8 +132,20 @@ mainloop
 			  noInitialRun: true
 		};
 		
+		var OUTPUT_TEMPLATE = Handlebars.compile(
+					'{{#each contents}}' +
+					'	<div class="panel is-{{type}}"><p class="panel-heading">{{name}}</p>' +
+					'		<textArea class="textarea is-family-code">{{content}}</textArea>' +
+					'	</div>' +
+					'{{/each}}');
+		function updateOutput(contents, type) {
+			document.getElementById('output').innerHTML = OUTPUT_TEMPLATE({
+				contents: Object.entries(contents).map(([name, content]) => ({name, content, type})), 		
+			});
+		}
+		
 		function clearOutput() {
-			document.getElementById('preprocess').value = '';
+			updateOutput({'Compiling': 'Please wait...'}, 'warning');
 		}
 		
 		function setupStdin(fs, code) {
@@ -152,7 +166,7 @@ mainloop
 				content: null
 			}));
 			return files;
-		}
+		}				
 
 		function preprocessBatariBasic(code) {
 			var bbout = "";
@@ -160,16 +174,25 @@ mainloop
 				bbout += s;
 				bbout += "\n";
 			}
+			
+			var errors = [];
+			function adderror_fn(s) {
+				errors.push(s);
+			}
+			
 			var BBPRE = preprocess({
 				noInitialRun: true,
 				//logReadFiles:true,
 				print: addbbout_fn,
-				printErr: stderr,
+				printErr: adderror_fn,
 				noFSInit: true,
 			});
 			var FS = BBPRE['FS'];
 			setupStdin(FS, code);
 			BBPRE.callMain([]);
+			if (errors.length) {
+				throw new Error("Errors while preprocessing:\n" + errors.join('\n'));
+			}
 			console.log("preprocess " + code.length + " -> " + bbout.length + " bytes");
 			return bbout;
 		}
@@ -506,17 +529,22 @@ mainloop
 			var remainingTries = 3;
 			function tryRunning() {
 				var source = document.getElementById('input').value;
-				var preprocessed = preprocessBatariBasic(source);
-				console.info('Preprocessing results.');
-				document.getElementById('preprocess').value = preprocessed;				
+				
+				var preprocessed = preprocessBatariBasic(source);				
+				console.info('Preprocessing results', preprocessed);
+				var preprocessedResults = {'Preprocessed': preprocessed};
+				updateOutput(preprocessedResults, 'info');
 				
 				var assemblyFiles = compileBatariBasic(preprocessed);				
 				console.info('Assembly files generated from BASIC source', assemblyFiles);
+				/*
 				document.getElementById('outputMarker').outerHTML = Object.entries(assemblyFiles).map(([name, content]) => {
 					return '<div class="panel is-info"><p class="panel-heading">' + name + '</p>' +
 					'<textArea class="textarea is-family-code">' + content + '</textArea>' +
 					'</div>';
 				}).join();
+				*/
+				updateOutput(Object.assign({}, preprocessedResults, assemblyFiles), 'info');
 				
 				var assemblyOutputs = assembleDASM(assemblyFiles);
 				console.info('Output files generated from assemblies', assemblyOutputs);
@@ -529,11 +557,6 @@ mainloop
 			
 		}
 	</script>
-    <script type="text/javascript" src="bb2600basic.js"></script>
-    <script type="text/javascript" src="bbpreprocess.js"></script>
-    <script type="text/javascript" src="dasm.js"></script>
-    <script type="text/javascript" src="fsContents.js"></script>
-    <script type="text/javascript" src="FileSaver.js"></script>
 	<script>
 		setTimeout(executeApplication, 1000);
 	</script>
