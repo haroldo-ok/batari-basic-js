@@ -206,7 +206,6 @@ mainloop
 			
 			var BBPRE = preprocess({
 				noInitialRun: true,
-				//logReadFiles:true,
 				print: addbbout_fn,
 				printErr: adderror_fn,
 				noFSInit: true,
@@ -250,10 +249,8 @@ mainloop
 					});
 				}
 			}
-			//gatherFiles(step, { mainFilePath: "main.bas" });
-			//var destpath = step.prefix + '.asm';
+
 			var destpath = 'main.asm';			
-			//if (staleFiles(step, [destpath])) {
 			{
 				var BB = bb2600basic({
 					noInitialRun: true,
@@ -264,12 +261,6 @@ mainloop
 					TOTAL_MEMORY: 64 * 1024 * 1024,
 				});
 				var FS = BB['FS'];
-				//populateFiles(FS);
-				// preprocess, pipe file to stdin
-				/*
-				var code = getWorkFileAsString(step.path);
-				code = preprocessBatariBasic(code);
-				*/
 				FS.mkdir('share');
 				FS.mkdir('share/includes');
 				Object.entries(DEFAULT_INCLUDES).forEach(([name, content]) => {
@@ -278,7 +269,6 @@ mainloop
 				
 				setupStdin(FS, code);
 				FS.writeFile('main.bas', code, { encoding: 'utf8' });
-				//setupFS(FS, '2600basic');
 				execMain(BB, ["-i", "/share", 'main.bas']);
 				if (errors.length) {
 					throw prepareException("Errors while compiling.", errors);
@@ -317,15 +307,6 @@ mainloop
 					'2600basic_variable_redefs.h': redefsout
 				};
 			}
-			/*
-			return {
-				nexttool: "dasm",
-				path: destpath,
-				args: [destpath],
-				files: [destpath, "2600basic.h", "2600basic_variable_redefs.h"],
-				bblines: true,
-			};
-			*/
 		}
 		
 		// test.c(6) : warning 85: in function main unreferenced local variable : 'x'
@@ -341,7 +322,6 @@ mainloop
 					errors.push({
 						line: errline,
 						path: matches[1],
-						//type:matches[3],
 						msg: matches[4]
 					});
 				}
@@ -513,15 +493,7 @@ mainloop
 				errors.push({ line: 0, msg: "No symbol table generated, maybe segment overflow?" });
 				return { errors: errors };
 			}
-			/*
-			putWorkFile(binpath, aout);
-			putWorkFile(lstpath, alst);
-			putWorkFile(sympath, asym);
-			*/
-			// return unchanged if no files changed
-			// TODO: what if listing or symbols change?
-			//if (!anyTargetChanged(step, [binpath /*, lstpath, sympath*/]))
-			//	return;
+			
 			var symbolmap = {};
 			for (var _b = 0, _c = asym.split("\n"); _b < _c.length; _b++) {
 				var s = _c[_b];
@@ -530,17 +502,7 @@ mainloop
 					symbolmap[toks[0]] = parseInt(toks[1], 16);
 				}
 			}
-			// for bataribasic (TODO)
-			/*			
-			if (step['bblines']) {
-				var lst = listings[step.path];
-				if (lst) {
-					lst.asmlines = lst.lines;
-					lst.text = alst;
-					lst.lines = [];
-				}
-			}
-			*/
+			
 			if (errors.length) {
 				throw prepareException("Errors while assembling.", errors);
 			}
@@ -568,13 +530,6 @@ mainloop
 					
 					var assemblyFiles = compileBatariBasic(preprocessed);				
 					console.info('Assembly files generated from BASIC source', assemblyFiles);
-					/*
-					document.getElementById('outputMarker').outerHTML = Object.entries(assemblyFiles).map(([name, content]) => {
-						return '<div class="panel is-info"><p class="panel-heading">' + name + '</p>' +
-						'<textArea class="textarea is-family-code">' + content + '</textArea>' +
-						'</div>';
-					}).join();
-					*/
 					updateOutput(Object.assign({}, preprocessedResults, assemblyFiles), 'info');
 					
 					var assemblyOutputs = assembleDASM(assemblyFiles);
