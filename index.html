@@ -78,7 +78,10 @@ mainloop
 		<div class="column fill-vertically is-success">
 			<div class="panel is-success">
 				<p class="panel-heading">Results</p>
-				<textArea class="textarea is-family-code"></textArea>
+				<div class="block"></div>
+				<div class="block">
+					<button id="downloadROM" class="button is-success" disabled>Download ROM</button>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -146,6 +149,7 @@ mainloop
 		
 		function clearOutput() {
 			updateOutput({'Compiling': 'Please wait...'}, 'warning');
+			document.getElementById('downloadROM').disabled = true;
 		}
 		
 		function setupStdin(fs, code) {
@@ -529,7 +533,7 @@ mainloop
 			var remainingTries = 3;
 			function tryRunning() {
 				var source = document.getElementById('input').value;
-				
+								
 				var preprocessed = preprocessBatariBasic(source);				
 				console.info('Preprocessing results', preprocessed);
 				var preprocessedResults = {'Preprocessed': preprocessed};
@@ -549,7 +553,9 @@ mainloop
 				var assemblyOutputs = assembleDASM(assemblyFiles);
 				console.info('Output files generated from assemblies', assemblyOutputs);
 				
-				saveAs(new Blob([assemblyOutputs.output]), 'generated-rom.bin');
+				var downloadButton = document.getElementById('downloadROM');
+				downloadButton.onclick = () => saveAs(new Blob([assemblyOutputs.output]), 'generated-rom.bin');
+				downloadButton.disabled = false;
 			}
 			
 			console.log('First try...');
