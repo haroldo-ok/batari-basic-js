@@ -30,13 +30,22 @@
 		.footer {
 			padding: 0;
 		}
+		
+		.float-right {
+			float: right;
+		}
 	</style>
 
 	<div class="columns is-mobile">
 
 		<div class="column fill-vertically">
 			<div class="panel full-height is-primary">
-				<p class="panel-heading">Input</p>
+				<p class="panel-heading">
+					Input
+                    <button id="compile-button" class="button is-outlined is-small float-right">
+					  <span>▶️ Compile</span>
+					</button>
+				</p>
 				<textArea id="input" class="textarea is-family-code full-height-without-heading" rows="10">
  rem Hello World
 
@@ -585,7 +594,8 @@ mainloop
 			var inputArea = document.getElementById('input');
 			var inputEvent = _.debounce(tryRunning, 300);
 			inputArea.onchange = inputEvent;
-			inputArea.onkeypress = inputEvent;
+			inputArea.onkeyup = inputEvent;
+			document.getElementById('compile-button').onclick = inputEvent;
 			
 			console.log('First try...');
 			tryRunning();
