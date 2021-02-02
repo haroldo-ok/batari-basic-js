@@ -536,6 +536,8 @@ mainloop
 		
 			var remainingTries = 3;
 			function tryRunning() {
+				clearOutput();
+			
 				var source = document.getElementById('input').value;
 								
 				var preprocessed = preprocessBatariBasic(source);				
