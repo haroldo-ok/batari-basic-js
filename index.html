@@ -154,6 +154,7 @@ mainloop
 		function clearOutput() {
 			updateOutput({'Compiling': 'Please wait...'}, 'warning');
 			document.getElementById('downloadROM').disabled = true;
+			document.getElementById('error').value = '';
 		}
 		
 		function setupStdin(fs, code) {
@@ -174,7 +175,13 @@ mainloop
 				content: null
 			}));
 			return files;
-		}				
+		}
+		
+		function prepareException(mainMessage, errors) {
+			var err = new Error(main);
+			err.errors = errors;
+			return err;
+		}
 
 		function preprocessBatariBasic(code) {
 			var bbout = "";
@@ -199,7 +206,7 @@ mainloop
 			setupStdin(FS, code);
 			BBPRE.callMain([]);
 			if (errors.length) {
-				throw new Error("Errors while preprocessing:\n" + errors.join('\n'));
+				throw prepareException("Errors while preprocessing.", errors);
 			}
 			console.log("preprocess " + code.length + " -> " + bbout.length + " bytes");
 			return bbout;
@@ -264,8 +271,9 @@ mainloop
 				FS.writeFile('main.bas', code, { encoding: 'utf8' });
 				//setupFS(FS, '2600basic');
 				execMain(BB, ["-i", "/share", 'main.bas']);
-				if (errors.length)
-					return { errors: errors };
+				if (errors.length) {
+					throw prepareException("Errors while compiling.", errors);
+				}
 					
 				// build final assembly output from include file list
 				var includesout = FS.readFile("includes.bB", { encoding: 'utf8' });
@@ -524,10 +532,13 @@ mainloop
 				}
 			}
 			*/
+			if (errors.length) {
+				throw prepareException("Errors while assembling.", errors);
+			}
+			
 			return {
 				output: aout,
 				listings: listings,
-				errors: errors,
 				symbolmap: symbolmap,
 			};
 		}
@@ -536,34 +547,39 @@ mainloop
 		
 			var remainingTries = 3;
 			function tryRunning() {
-				clearOutput();
-			
-				var source = document.getElementById('input').value;
-								
-				var preprocessed = preprocessBatariBasic(source);				
-				console.info('Preprocessing results', preprocessed);
-				var preprocessedResults = {'Preprocessed': preprocessed};
-				updateOutput(preprocessedResults, 'info');
+				try {
+					clearOutput();
 				
-				var assemblyFiles = compileBatariBasic(preprocessed);				
-				console.info('Assembly files generated from BASIC source', assemblyFiles);
-				/*
-				document.getElementById('outputMarker').outerHTML = Object.entries(assemblyFiles).map(([name, content]) => {
-					return '<div class="panel is-info"><p class="panel-heading">' + name + '</p>' +
-					'<textArea class="textarea is-family-code">' + content + '</textArea>' +
-					'</div>';
-				}).join();
-				*/
-				updateOutput(Object.assign({}, preprocessedResults, assemblyFiles), 'info');
-				
-				var assemblyOutputs = assembleDASM(assemblyFiles);
-				console.info('Output files generated from assemblies', assemblyOutputs);
-				
-				var downloadButton = document.getElementById('downloadROM');
-				downloadButton.onclick = () => saveAs(new Blob([assemblyOutputs.output]), 'generated-rom.bin');
-				downloadButton.disabled = false;
-				
-				Javatari.fileLoader.loadFromContent('main.bin', assemblyOutputs.output);
+					var source = document.getElementById('input').value;
+									
+					var preprocessed = preprocessBatariBasic(source);				
+					console.info('Preprocessing results', preprocessed);
+					var preprocessedResults = {'Preprocessed': preprocessed};
+					updateOutput(preprocessedResults, 'info');
+					
+					var assemblyFiles = compileBatariBasic(preprocessed);				
+					console.info('Assembly files generated from BASIC source', assemblyFiles);
+					/*
+					document.getElementById('outputMarker').outerHTML = Object.entries(assemblyFiles).map(([name, content]) => {
+						return '<div class="panel is-info"><p class="panel-heading">' + name + '</p>' +
+						'<textArea class="textarea is-family-code">' + content + '</textArea>' +
+						'</div>';
+					}).join();
+					*/
+					updateOutput(Object.assign({}, preprocessedResults, assemblyFiles), 'info');
+					
+					var assemblyOutputs = assembleDASM(assemblyFiles);
+					console.info('Output files generated from assemblies', assemblyOutputs);
+					
+					var downloadButton = document.getElementById('downloadROM');
+					downloadButton.onclick = () => saveAs(new Blob([assemblyOutputs.output]), 'generated-rom.bin');
+					downloadButton.disabled = false;
+					
+					Javatari.fileLoader.loadFromContent('main.bin', assemblyOutputs.output);
+				} catch (e) {
+					console.error('Error while compiling', e);
+					document.getElementById('error').value = e;
+				}
 			}
 			
 			var inputArea = document.getElementById('input');
