@@ -1,14 +1,5 @@
 (function(){
-	async function loadFileSystem() {
-		const metadata = (await fetch('fs2600basic.js.metadata')).json();
-		const content = (await fetch('fs2600basic.data')).blob();
-		const files = metadata.files.map(({filename, start, end}) => ({
-			filename, start, end,
-			content: null
-		}));
-		return files;
-	}
-		
+
 	function prepareException(mainMessage, errors) {
 		var err = new Error(main);
 		err.errors = errors;
@@ -310,11 +301,12 @@
 		aout = FS.readFile(binpath);
 		try {
 			asym = FS.readFile(sympath, { 'encoding': 'utf8' });
-		}
-		catch (e) {
+		} catch (e) {
 			console.log(e);
 			errors.push({ line: 0, msg: "No symbol table generated, maybe segment overflow?" });
-			return { errors: errors };
+			if (errors.length) {
+				throw prepareException("Errors while reading symbol table.", errors);
+			}
 		}
 		
 		var symbolmap = {};
@@ -337,8 +329,6 @@
 		};
 	}
 	
-	window.preprocessBatariBasic = preprocessBatariBasic;
-	window.compileBatariBasic = compileBatariBasic;
-	window.assembleDASM = assembleDASM;
+	module.exports = { preprocessBatariBasic, compileBatariBasic, assembleDASM };
 
 })();
