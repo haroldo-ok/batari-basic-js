@@ -1,7 +1,10 @@
 (function(){
 	
 	const preprocess = require('./third-party/bbpreprocess');
-
+	const bb2600basic = require('./third-party/bb2600basic');
+	
+	const DEFAULT_INCLUDES = require('./fsContents');
+	
 	function prepareException(mainMessage, errors) {
 		var err = new Error(main);
 		err.errors = errors;

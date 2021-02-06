@@ -26,6 +26,15 @@ mainloop
  goto mainloop
 `;
 
-test('adds 1 + 2 to equal 3', () => {
-  expect(preprocessBatariBasic(HELLO_WORLD)).toBeDefined();
+test('preprocesses "Hello World" and returns something.', () => {
+	expect(preprocessBatariBasic(HELLO_WORLD)).toBeDefined();
+});
+
+test('compiles "Hello World" and returns the generated assemblies.', () => {
+	const preprocessedSrc = preprocessBatariBasic(HELLO_WORLD);
+	const generatedAssemblies = compileBatariBasic(preprocessedSrc);
+	
+	const names = Object.keys(generatedAssemblies);
+	console.warn('Names', names);
+	expect(names).toEqual(['main.asm', '2600basic.h', '2600basic_variable_redefs.h']);
 });
