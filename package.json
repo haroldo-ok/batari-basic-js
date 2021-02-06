@@ -1,0 +1,23 @@
+{
+  "name": "batari-basic",
+  "version": "0.0.1",
+  "description": "Compiles Batari Basic source files from a JS environment.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/haroldo-ok/batari-basic-js.git"
+  },
+  "keywords": [
+    "atari2600",
+    "compiler"
+  ],
+  "author": "Haroldo O. Pinheiro",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/haroldo-ok/batari-basic-js/issues"
+  },
+  "homepage": "https://github.com/haroldo-ok/batari-basic-js#readme"
+}
