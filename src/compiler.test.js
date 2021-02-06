@@ -34,7 +34,5 @@ test('compiles "Hello World" and returns the generated assemblies.', () => {
 	const preprocessedSrc = preprocessBatariBasic(HELLO_WORLD);
 	const generatedAssemblies = compileBatariBasic(preprocessedSrc);
 	
-	const names = Object.keys(generatedAssemblies);
-	console.warn('Names', names);
-	expect(names).toEqual(['main.asm', '2600basic.h', '2600basic_variable_redefs.h']);
+	expect(Object.keys(generatedAssemblies)).toEqual(['main.asm', '2600basic.h', '2600basic_variable_redefs.h']);
 });

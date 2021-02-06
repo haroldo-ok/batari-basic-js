@@ -5,6 +5,9 @@
 	
 	const DEFAULT_INCLUDES = require('./fsContents');
 	
+	// Just a noop placeholder, for now.
+	const logger = { log: (message, data) => null };
+	
 	function prepareException(mainMessage, errors) {
 		var err = new Error(main);
 		err.errors = errors;
@@ -40,7 +43,7 @@
 		if (errors.length) {
 			throw prepareException("Errors while preprocessing.", errors);
 		}
-		console.log("preprocess " + code.length + " -> " + bbout.length + " bytes");
+		logger.log("preprocess " + code.length + " -> " + bbout.length + " bytes");
 		return bbout;
 	}
 	
@@ -63,7 +66,7 @@
 		var errors = [];
 		var errline = 0;
 		function match_fn(s) {
-			console.log(s);
+			logger.log(s);
 			var matches = re_err1.exec(s);
 			if (matches) {
 				errline = parseInt(matches[1]);
@@ -113,7 +116,7 @@
 					inctext = splitasm[1];
 				else
 					inctext = FS.readFile("/share/includes/" + incfile, { encoding: 'utf8' });
-				console.log(incfile, inctext.length);
+				logger.log(incfile, inctext.length);
 				combinedasm += "\n\n;;;" + incfile + "\n\n";
 				combinedasm += inctext;
 			}
@@ -150,7 +153,7 @@
 				});
 			}
 			else {
-				console.log(s);
+				logger.log(s);
 			}
 		};
 	}
@@ -312,7 +315,7 @@
 		try {
 			asym = FS.readFile(sympath, { 'encoding': 'utf8' });
 		} catch (e) {
-			console.log(e);
+			logger.log(e);
 			errors.push({ line: 0, msg: "No symbol table generated, maybe segment overflow?" });
 			if (errors.length) {
 				throw prepareException("Errors while reading symbol table.", errors);
