@@ -348,6 +348,13 @@
 		};
 	}
 	
-	module.exports = { preprocessBatariBasic, compileBatariBasic, assembleDASM };
+	function fullBuild(source) {
+		const preprocessedSrc = preprocessBatariBasic(source);
+		const generatedAssemblies = compileBatariBasic(preprocessedSrc);
+		const assembledBinaries = assembleDASM(generatedAssemblies);
+		return assembledBinaries;
+	}	
+	
+	module.exports = { preprocessBatariBasic, compileBatariBasic, assembleDASM, fullBuild };
 
 })();

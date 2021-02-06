@@ -1,4 +1,4 @@
-const { preprocessBatariBasic, compileBatariBasic, assembleDASM } = require('./compiler');
+const { preprocessBatariBasic, compileBatariBasic, assembleDASM, fullBuild } = require('./compiler');
 
 const HELLO_WORLD = `
  rem Hello World
@@ -43,4 +43,12 @@ test('compiles and assembles "Hello World" and returns the generated binaries.',
 	const assembledBinaries = assembleDASM(generatedAssemblies);
 	
 	expect(Object.keys(assembledBinaries)).toEqual(['output', 'listings', 'symbolmap']);
+	expect(assembledBinaries.output.length).toEqual(4096);
+});
+
+test('fully builds "Hello World" and returns the generated binaries.', () => {
+	const binaries = fullBuild(HELLO_WORLD);
+	
+	expect(Object.keys(binaries)).toEqual(['output', 'listings', 'symbolmap']);
+	expect(binaries.output.length).toEqual(4096);
 });
