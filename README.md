@@ -22,8 +22,50 @@
 ## Install
 
 ```sh
-npm install
+npm install batari-basic
 ```
+
+## Usage
+
+``` javascript
+const bBasic = require('batari-basic');
+const fs = require('fs');
+
+const HELLO_WORLD = `
+ rem Hello World
+
+ playfield:
+................................
+......X.X.XXX.X...X...XXX.......
+......X.X.X...X...X...X.X.......
+......XXX.XX..X...X...X.X.......
+......X.X.X...X...X...X.X.......
+......X.X.XXX.XXX.XXX.XXX.......
+................................
+.....X...X.XXX.XX..X...XX.......
+.....X...X.X.X.X.X.X...X.X......
+.....X.X.X.X.X.XX..X...X.X......
+.....XX.XX.XXX.X.X.XXX.XX.......
+end
+
+ COLUPF = 22
+ COLUBK = 2
+
+mainloop
+ drawscreen
+ score = score + 1
+ goto mainloop
+`;
+
+const binaries = bBasic(HELLO_WORLD);
+fs.writeFileSync('example.bin', Buffer.from(binaries.output));
+```
+
+The  `bBasic(code)` function receives, as a parameter, a string containing the source code to compile, and returns an object three keys:
+
+* `output` is the compiled Atari 2600 ROM, as a `Uint8Array` containing its bytes.
+* `listings` is an string containing the generated ASM listings;
+* `symbolmap` is an string mapping addresses to symbols, often used by debugging emulators.
 
 ## Run tests
 
