@@ -2,6 +2,7 @@
 	
 	const preprocess = require('./third-party/bbpreprocess');
 	const bb2600basic = require('./third-party/bb2600basic');
+	const DASM = require('./third-party/dasm');
 	
 	const DEFAULT_INCLUDES = require('./fsContents');
 	
@@ -9,7 +10,12 @@
 	const logger = { log: (message, data) => null };
 	
 	function prepareException(mainMessage, errors) {
-		var err = new Error(main);
+		var joinedErrors = errors.map(err => 
+			err.length ? err 
+			: err.msg ? `Line ${err.line}: ${err.msg}`
+			: JSON.stringify(err) 
+		).join('\n');
+		var err = new Error(mainMessage + '\n' + joinedErrors);
 		err.errors = errors;
 		return err;
 	}
@@ -307,7 +313,7 @@
 		}
 		parseDASMListing(alst, listings, errors, unresolved);
 		if (errors.length) {
-			return { errors: errors };
+			throw prepareException("Errors while assembling.", errors);
 		}
 		// read binary rom output and symbols
 		var aout, asym;
@@ -338,7 +344,7 @@
 		return {
 			output: aout,
 			listings: listings,
-			symbolmap: symbolmap,
+			symbolmap: symbolmap
 		};
 	}
 	

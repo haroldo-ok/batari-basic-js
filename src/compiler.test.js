@@ -36,3 +36,11 @@ test('compiles "Hello World" and returns the generated assemblies.', () => {
 	
 	expect(Object.keys(generatedAssemblies)).toEqual(['main.asm', '2600basic.h', '2600basic_variable_redefs.h']);
 });
+
+test('compiles and assembles "Hello World" and returns the generated binaries.', () => {
+	const preprocessedSrc = preprocessBatariBasic(HELLO_WORLD);
+	const generatedAssemblies = compileBatariBasic(preprocessedSrc);
+	const assembledBinaries = assembleDASM(generatedAssemblies);
+	
+	expect(Object.keys(assembledBinaries)).toEqual(['output', 'listings', 'symbolmap']);
+});
