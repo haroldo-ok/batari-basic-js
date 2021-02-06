@@ -1,18 +1,28 @@
 (function(){
-	async function loadFileSystem() {
-		const metadata = (await fetch('fs2600basic.js.metadata')).json();
-		const content = (await fetch('fs2600basic.data')).blob();
-		const files = metadata.files.map(({filename, start, end}) => ({
-			filename, start, end,
-			content: null
-		}));
-		return files;
-	}
-		
+	
+	const preprocess = require('./third-party/bbpreprocess');
+	const bb2600basic = require('./third-party/bb2600basic');
+	const DASM = require('./third-party/dasm');
+	
+	const DEFAULT_INCLUDES = require('./fsContents');
+	
+	// Just a noop placeholder, for now.
+	const logger = { log: (message, data) => null };
+	
 	function prepareException(mainMessage, errors) {
-		var err = new Error(main);
+		var joinedErrors = errors.map(err => 
+			err.length ? err 
+			: err.msg ? `Line ${err.line}: ${err.msg}`
+			: JSON.stringify(err) 
+		).join('\n');
+		var err = new Error(mainMessage + '\n' + joinedErrors);
 		err.errors = errors;
 		return err;
+	}
+
+	function setupStdin(fs, code) {
+		var i = 0;
+		fs.init(function () { return i < code.length ? code.charCodeAt(i++) : null; });
 	}
 
 	function preprocessBatariBasic(code) {
@@ -39,7 +49,7 @@
 		if (errors.length) {
 			throw prepareException("Errors while preprocessing.", errors);
 		}
-		console.log("preprocess " + code.length + " -> " + bbout.length + " bytes");
+		logger.log("preprocess " + code.length + " -> " + bbout.length + " bytes");
 		return bbout;
 	}
 	
@@ -62,7 +72,7 @@
 		var errors = [];
 		var errline = 0;
 		function match_fn(s) {
-			console.log(s);
+			logger.log(s);
 			var matches = re_err1.exec(s);
 			if (matches) {
 				errline = parseInt(matches[1]);
@@ -112,7 +122,7 @@
 					inctext = splitasm[1];
 				else
 					inctext = FS.readFile("/share/includes/" + incfile, { encoding: 'utf8' });
-				console.log(incfile, inctext.length);
+				logger.log(incfile, inctext.length);
 				combinedasm += "\n\n;;;" + incfile + "\n\n";
 				combinedasm += inctext;
 			}
@@ -149,7 +159,7 @@
 				});
 			}
 			else {
-				console.log(s);
+				logger.log(s);
 			}
 		};
 	}
@@ -303,18 +313,19 @@
 		}
 		parseDASMListing(alst, listings, errors, unresolved);
 		if (errors.length) {
-			return { errors: errors };
+			throw prepareException("Errors while assembling.", errors);
 		}
 		// read binary rom output and symbols
 		var aout, asym;
 		aout = FS.readFile(binpath);
 		try {
 			asym = FS.readFile(sympath, { 'encoding': 'utf8' });
-		}
-		catch (e) {
-			console.log(e);
+		} catch (e) {
+			logger.log(e);
 			errors.push({ line: 0, msg: "No symbol table generated, maybe segment overflow?" });
-			return { errors: errors };
+			if (errors.length) {
+				throw prepareException("Errors while reading symbol table.", errors);
+			}
 		}
 		
 		var symbolmap = {};
@@ -333,12 +344,17 @@
 		return {
 			output: aout,
 			listings: listings,
-			symbolmap: symbolmap,
+			symbolmap: symbolmap
 		};
 	}
 	
-	window.preprocessBatariBasic = preprocessBatariBasic;
-	window.compileBatariBasic = compileBatariBasic;
-	window.assembleDASM = assembleDASM;
+	function fullBuild(source) {
+		const preprocessedSrc = preprocessBatariBasic(source);
+		const generatedAssemblies = compileBatariBasic(preprocessedSrc);
+		const assembledBinaries = assembleDASM(generatedAssemblies);
+		return assembledBinaries;
+	}	
+	
+	module.exports = { preprocessBatariBasic, compileBatariBasic, assembleDASM, fullBuild };
 
 })();

@@ -22,3 +22,10 @@ var wa=[ze,Rc,Kc,ud,Pc,Jc,ze,ze];var xa=[Ae,Nc,Qc,Ae];var ya=[Be,Yb,Zb,ac,bc,cc,
 
   return DASM;
 };
+
+if (typeof exports === 'object' && typeof module === 'object')
+    module.exports = DASM;
+  else if (typeof define === 'function' && define['amd'])
+    define([], function() { return DASM; });
+  else if (typeof exports === 'object')
+    exports["DASM"] = DASM;

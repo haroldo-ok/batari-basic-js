@@ -4,7 +4,8 @@
   "description": "Compiles Batari Basic source files from a JS environment.",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "test-watch": "jest --watch"
   },
   "repository": {
     "type": "git",
@@ -19,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/haroldo-ok/batari-basic-js/issues"
   },
-  "homepage": "https://github.com/haroldo-ok/batari-basic-js#readme"
+  "homepage": "https://github.com/haroldo-ok/batari-basic-js#readme",
+  "devDependencies": {
+    "jest": "^26.6.3"
+  }
 }

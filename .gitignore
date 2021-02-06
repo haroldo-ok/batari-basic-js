@@ -2,3 +2,4 @@
 /batari_basic/2600basic
 /batari_basic/a.out.js
 /batari_basic/*.em.js
+/node_modules
