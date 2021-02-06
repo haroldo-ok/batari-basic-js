@@ -1,9 +1,16 @@
 (function(){
+	
+	const preprocess = require('./third-party/bbpreprocess');
 
 	function prepareException(mainMessage, errors) {
 		var err = new Error(main);
 		err.errors = errors;
 		return err;
+	}
+
+	function setupStdin(fs, code) {
+		var i = 0;
+		fs.init(function () { return i < code.length ? code.charCodeAt(i++) : null; });
 	}
 
 	function preprocessBatariBasic(code) {

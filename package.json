@@ -4,7 +4,8 @@
   "description": "Compiles Batari Basic source files from a JS environment.",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "test-watch": "jest --watch"
   },
   "repository": {
     "type": "git",
