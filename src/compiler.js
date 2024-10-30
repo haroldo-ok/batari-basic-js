@@ -262,10 +262,18 @@
 
 	function assembleDASM(assemblyFiles) {
 		var re_usl = /(\w+)\s+0000\s+[?][?][?][?]/;
+		var re_romspace = /\s+(\d+) bytes of ROM space left/
+
 		var unresolved = {};
 		var errors = [];
+		var stats = {};
 		var errorMatcher = msvcErrorMatcher(errors);
 		function match_fn(s) {
+			var match_romspace = re_romspace.exec(s);
+			if (match_romspace) {
+				stats.romSpaceLeft = parseInt(match_romspace[1]);
+			}
+
 			// TODO: what if s is not string? (startsWith is not a function)
 			var matches = re_usl.exec(s);
 			if (matches) {
@@ -343,8 +351,9 @@
 		
 		return {
 			output: aout,
-			listings: listings,
-			symbolmap: symbolmap
+			listings,
+			symbolmap,
+			stats,
 		};
 	}
 	
