@@ -42,13 +42,13 @@ test('compiles and assembles "Hello World" and returns the generated binaries.',
 	const generatedAssemblies = compileBatariBasic(preprocessedSrc);
 	const assembledBinaries = assembleDASM(generatedAssemblies);
 	
-	expect(Object.keys(assembledBinaries)).toEqual(['output', 'listings', 'symbolmap']);
+	expect(Object.keys(assembledBinaries)).toEqual(['output', 'listings', 'symbolmap', 'stats']);
 	expect(assembledBinaries.output.length).toEqual(4096);
 });
 
 test('fully builds "Hello World" and returns the generated binaries.', () => {
 	const binaries = fullBuild(HELLO_WORLD);
 	
-	expect(Object.keys(binaries)).toEqual(['output', 'listings', 'symbolmap']);
+	expect(Object.keys(binaries)).toEqual(['output', 'listings', 'symbolmap', 'stats']);
 	expect(binaries.output.length).toEqual(4096);
 });

@@ -264,6 +264,7 @@
 		var re_usl = /(\w+)\s+0000\s+[?][?][?][?]/;
 		var unresolved = {};
 		var errors = [];
+		var stats = {};
 		var errorMatcher = msvcErrorMatcher(errors);
 		function match_fn(s) {
 			// TODO: what if s is not string? (startsWith is not a function)
@@ -343,8 +344,9 @@
 		
 		return {
 			output: aout,
-			listings: listings,
-			symbolmap: symbolmap
+			listings,
+			symbolmap,
+			stats,
 		};
 	}
 	
