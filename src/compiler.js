@@ -350,11 +350,14 @@
 				symbolmap[toks[0]] = parseInt(toks[1], 16);
 			}
 		}
+
+		var romSize = aout && aout.length || 0;
+		stats.rom.bytesUsed = romSize - stats.rom.bytesLeft;
 		
 		if (errors.length) {
 			throw prepareException("Errors while assembling.", errors);
 		}
-		
+
 		return {
 			output: aout,
 			listings,
