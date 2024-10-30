@@ -266,12 +266,18 @@
 
 		var unresolved = {};
 		var errors = [];
-		var stats = {};
+		var stats = {
+			rom: {
+				bytesLeft: 0,
+				bytesUsed: 0
+			}
+		};
+
 		var errorMatcher = msvcErrorMatcher(errors);
 		function match_fn(s) {
 			var match_romspace = re_romspace.exec(s);
 			if (match_romspace) {
-				stats.romSpaceLeft = parseInt(match_romspace[1]);
+				stats.rom.bytesLeft = parseInt(match_romspace[1]);
 			}
 
 			// TODO: what if s is not string? (startsWith is not a function)

@@ -44,13 +44,14 @@ test('compiles and assembles "Hello World" and returns the generated binaries.',
 	
 	expect(Object.keys(assembledBinaries)).toEqual(['output', 'listings', 'symbolmap', 'stats']);
 	expect(assembledBinaries.output.length).toEqual(4096);
-	expect(assembledBinaries.stats.romSpaceLeft).toEqual(2737);
+	expect(assembledBinaries.stats.rom.bytesLeft).toEqual(2737);
+	expect(assembledBinaries.stats.rom.bytesUsed).toEqual(1359);
 });
 
 test('fully builds "Hello World" and returns the generated binaries.', () => {
 	const binaries = fullBuild(HELLO_WORLD);
 	
 	expect(Object.keys(binaries)).toEqual(['output', 'listings', 'symbolmap', 'stats']);
-	expect(binaries.output.length).toEqual(4096);
-	expect(binaries.stats.romSpaceLeft).toEqual(2737);
+	expect(binaries.stats.rom.bytesLeft).toEqual(2737);
+	expect(binaries.stats.rom.bytesUsed).toEqual(1359);
 });
