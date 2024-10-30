@@ -44,6 +44,7 @@ test('compiles and assembles "Hello World" and returns the generated binaries.',
 	
 	expect(Object.keys(assembledBinaries)).toEqual(['output', 'listings', 'symbolmap', 'stats']);
 	expect(assembledBinaries.output.length).toEqual(4096);
+	expect(assembledBinaries.stats.romSpaceLeft).toEqual(2737);
 });
 
 test('fully builds "Hello World" and returns the generated binaries.', () => {
@@ -51,4 +52,5 @@ test('fully builds "Hello World" and returns the generated binaries.', () => {
 	
 	expect(Object.keys(binaries)).toEqual(['output', 'listings', 'symbolmap', 'stats']);
 	expect(binaries.output.length).toEqual(4096);
+	expect(binaries.stats.romSpaceLeft).toEqual(2737);
 });
